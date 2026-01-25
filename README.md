@@ -20,7 +20,7 @@ This project followed a structured development roadmap:
 1. Clone the repository and navigate to the project folder.
 2. (Recommended) Create and activate a virtual environment.
 3. Run `pip install -r requirements.txt` to install all necessary libraries.
-4. Configure your database credentials in `config.py`.
+4. Create a .env file in the project root and add your database configuration (according to .env.example)
 5. Run `python -m db.init_db` to create tables.
 6. Run `python -m db.seed_db` to add sample movies.
 7. Run `python main.py` to start the application.
