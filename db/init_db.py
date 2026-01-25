@@ -1,5 +1,6 @@
 import sys
 import os
+from loguru import logger
 
 # Add project root to sys.path to import config/db
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -10,7 +11,7 @@ from db.connection import get_db_connection
 def create_tables():
     conn = get_db_connection()
     if conn is None:
-        print("Failed to connect to the database.")
+        logger.error("Database connection could not be established.")
         return
 
     commands = [
@@ -88,14 +89,15 @@ def create_tables():
                 "INSERT INTO users (username, password_hash, role) VALUES (%s, %s, %s)",
                 ('admin', 'admin', 'admin')
             )
-            print("Default admin account created (admin/admin).")
+            logger.info("Default admin account created (admin/admin).")
 
         conn.commit()
         cur.close()
         conn.close()
-        print("Tables created successfully!")
+        logger.success("Database tables created successfully.")
+        
     except Exception as e:
-        print(f"Error creating tables: {e}")
+        logger.error(f"Error creating tables: {e}")
 
 
 if __name__ == "__main__":

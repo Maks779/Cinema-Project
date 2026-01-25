@@ -5,11 +5,11 @@ def get_db_connection():
     """Establishes a connection to the PostgreSQL database using config settings."""
     try:
         conn = psycopg2.connect(
-            host=settings.db.host,
-            port=settings.db.port,
-            user=settings.db.user,
-            password=settings.db.password,
-            dbname=settings.db.dbname
+            host=settings.db.DB_HOST,
+            port=settings.db.DB_PORT,
+            user=settings.db.DB_USER,
+            password=settings.db.DB_PASSWORD,
+            dbname=settings.db.DB_NAME
         )
         return conn
     except Exception as e:

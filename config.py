@@ -2,17 +2,25 @@ import os
 import logging
 from typing import Self
 from pydantic import BaseModel
+from pydantic_settings import BaseSettings
+from pydantic_settings import SettingsConfigDict
 
 # !!!Temporary test config, replace with environment variables or config files in production!!!
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-class DatabaseConfig(BaseModel):
-    host: str = "localhost"
-    port: int = 5432
-    user: str = "postgres"
-    password: str = "admin123"  # Use the password you just set
-    dbname: str = "cinema_db"
+class DatabaseConfig(BaseSettings):
+    """Configuration for the database."""
+    
+    model_config = SettingsConfigDict(
+        env_file=".env", case_sensitive=True
+    )
+    
+    DB_HOST: str 
+    DB_PORT: str
+    DB_USER: str
+    DB_PASSWORD: str
+    DB_NAME: str
 
 class UIConfig(BaseModel):
     ui_dir: str = os.path.join(BASE_DIR, "ui")
