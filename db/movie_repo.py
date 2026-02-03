@@ -3,13 +3,10 @@ from db.connection import get_db_connection
 class MovieRepo:
     def get_all_movies(self):
         conn = get_db_connection()
-        if not conn: return []
-        try:
-            cur = conn.cursor()
-            cur.execute("SELECT id, title, genre, duration_minutes, description FROM movies")
-            return cur.fetchall()
-        except Exception as e:
-            print(f"Error fetching movies: {e}")
-            return []
-        finally:
-            conn.close()
+        cursor = conn.cursor()
+        # ENSURE 'poster_link' IS THE 6TH COLUMN
+        cursor.execute("SELECT id, title, genre, duration, description, poster_link FROM movies")
+        movies = cursor.fetchall()
+        cursor.close()
+        conn.close()
+        return movies

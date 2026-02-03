@@ -1,34 +1,38 @@
 import sys
 import os
+import traceback  # Required for the error report
 
-# Ensure the project root is in the path so imports work
+# Ensure the project root is in the path
 current_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(current_dir)
 
-# Using PySide6 to avoid the Python 3.13 DLL errors
 from PySide6.QtWidgets import QApplication
-from views.start_window import StartWindow
+from views.main_view import MainView
 from config import settings
+from db.connection import verify_database_schema
 
 def main():
-    # Initialize the Application
+    # 1. Check DB first
+    verify_database_schema()
+
     app = QApplication(sys.argv)
     app.setApplicationName(settings.app_name)
 
-    # Apply Styles if the file exists
-    try:
-        if os.path.exists(settings.ui.styles_path):
-            with open(settings.ui.styles_path, "r", encoding="utf-8") as f:
-                app.setStyleSheet(f.read())
-    except Exception as e:
-        print(f"Error loading styles: {e}")
-
-    # Launch the Start Window
-    window = StartWindow()
+    # 2. Launch MainView in Guest Mode
+    # If this line crashes, the 'except' block below will catch it!
+    window = MainView(username=None, role="guest")
     window.show()
 
-    # PySide6 uses exec() instead of exec_()
     sys.exit(app.exec())
 
 if __name__ == "__main__":
-    main()
+    # THIS IS THE SAFETY NET (Step 1)
+    try:
+        main()
+    except Exception as e:
+        print("\n" + "!"*60)
+        print("❌ CRASH DETECTED! Here is the reason:")
+        traceback.print_exc()
+        print("!"*60)
+        # This is the most important line: it keeps the terminal open!
+        input("\nPress ENTER to close this window...")
