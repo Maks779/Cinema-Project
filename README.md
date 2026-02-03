@@ -1,6 +1,6 @@
 # Cinema-Project
 # Cinema Booking System 🎬
-A Python-based desktop application for managing cinema tickets, built with **PySide6** and **PostgreSQL**
+A Python-based desktop application for managing cinema tickets, built with **PySide6** and **PostgreSQL**.
 
 ## 🚀 Project Status: Phases 1-6 Complete
 This project followed a structured development roadmap:
