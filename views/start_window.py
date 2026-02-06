@@ -131,7 +131,7 @@ class StartWindow(QMainWindow):
 
             QTimer.singleShot(50, self.update_overlay_geometry)
 
-            QTimer.singleShot(100, self.show_card_with_animation)
+            QTimer.singleShot(150, self.show_card_with_animation)
 
     def show_card_with_animation(self):
         if self.center_card:

@@ -7,11 +7,45 @@ from PySide6.QtWidgets import (
     QPushButton,
     QFrame,
 )
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QPropertyAnimation, QEasingCurve
 from PySide6.QtGui import QPixmap, QIcon
 import os
 
 from ui.styles import apply_style
+
+
+def fade_to_window(current: QWidget, next_cls, *args, **kwargs):
+    """
+    Простий fade-перехід між вікнами.
+    Не чіпає логіку вікон, тільки показ/закриття.
+    """
+    next_win = next_cls(*args, **kwargs)
+    # Синхронізуємо геометрію, щоб не було стрибка
+    next_win.setGeometry(current.geometry())
+    next_win.setWindowOpacity(0.0)
+    next_win.show()
+
+    anim_out = QPropertyAnimation(current, b"windowOpacity")
+    anim_out.setDuration(300)
+    anim_out.setStartValue(1.0)
+    anim_out.setEndValue(0.0)
+    anim_out.setEasingCurve(QEasingCurve.InOutQuad)
+
+    anim_in = QPropertyAnimation(next_win, b"windowOpacity")
+    anim_in.setDuration(300)
+    anim_in.setStartValue(0.0)
+    anim_in.setEndValue(1.0)
+    anim_in.setEasingCurve(QEasingCurve.InOutQuad)
+
+    def close_current():
+        current.close()
+
+    anim_out.finished.connect(close_current)
+
+    anim_out.start()
+    anim_in.start()
+
+    return next_win
 
 
 class LoginWindow(QWidget):
@@ -23,6 +57,8 @@ class LoginWindow(QWidget):
         self.auth_service = None
 
         self.error_labels = {}
+        self.bg_label = None      # NEW
+        self.overlay = None       # NEW
 
         self.init_ui()
         apply_style(self, "auth")
@@ -34,10 +70,29 @@ class LoginWindow(QWidget):
             self.setWindowIcon(QIcon(icon_path))
 
     def init_ui(self):
+        # --- Головний контейнер ---
         main_layout = QVBoxLayout(self)
         main_layout.setContentsMargins(0, 0, 0, 0)
         main_layout.setSpacing(0)
 
+        # --- ШАР 1: фон ---
+        self.bg_label = QLabel(self)
+        self.bg_label.setScaledContents(True)
+        self.bg_label.lower()
+
+        bg_path = "assets/bg_photo2.png"
+        if not os.path.exists(bg_path):
+            bg_path = "assets/bg_photo.png"
+        if os.path.exists(bg_path):
+            self.bg_label.setPixmap(QPixmap(bg_path))
+        else:
+            self.bg_label.setStyleSheet("background-color: #000000;")
+
+        # --- ШАР 2: затемнюючий overlay ---
+        self.overlay = QWidget(self)
+        self.overlay.setStyleSheet("background-color: rgba(0, 0, 0, 0.75);")
+
+        # --- ШАР 3: існуючий контент (НЕ змінюємо верстку) ---
         main_layout.addStretch(1)
 
         h_layout = QHBoxLayout()
@@ -132,6 +187,14 @@ class LoginWindow(QWidget):
 
         main_layout.addLayout(h_layout)
         main_layout.addStretch(1)
+
+    # NEW: розтягуємо фон і overlay
+    def resizeEvent(self, event):
+        if self.bg_label and self.overlay:
+            size = self.size()
+            self.bg_label.setGeometry(0, 0, size.width(), size.height())
+            self.overlay.setGeometry(0, 0, size.width(), size.height())
+        super().resizeEvent(event)
 
     def show_error(self, field, message):
         if field == "username":

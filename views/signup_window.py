@@ -27,6 +27,8 @@ class SignupWindow(QWidget):
         self.user_repo = UserRepo()
 
         self.error_labels = {}
+        self.bg_label = None      # NEW
+        self.overlay = None       # NEW
 
         self.init_ui()
         apply_style(self, "auth")
@@ -38,10 +40,29 @@ class SignupWindow(QWidget):
             self.setWindowIcon(QIcon(icon_path))
 
     def init_ui(self):
+        # --- Головний контейнер ---
         main_layout = QVBoxLayout(self)
         main_layout.setContentsMargins(0, 0, 0, 0)
         main_layout.setSpacing(0)
 
+        # --- ШАР 1: фон ---
+        self.bg_label = QLabel(self)
+        self.bg_label.setScaledContents(True)
+        self.bg_label.lower()
+
+        bg_path = "assets/bg_photo2.png"
+        if not os.path.exists(bg_path):
+            bg_path = "assets/bg_photo.png"
+        if os.path.exists(bg_path):
+            self.bg_label.setPixmap(QPixmap(bg_path))
+        else:
+            self.bg_label.setStyleSheet("background-color: #000000;")
+
+        # --- ШАР 2: затемнюючий overlay ---
+        self.overlay = QWidget(self)
+        self.overlay.setStyleSheet("background-color: rgba(0, 0, 0, 0.75);")
+
+        # --- ШАР 3: існуючий контент (НЕ змінюємо верстку) ---
         main_layout.addStretch(1)
 
         h_layout = QHBoxLayout()
@@ -174,6 +195,14 @@ class SignupWindow(QWidget):
 
         main_layout.addLayout(h_layout)
         main_layout.addStretch(1)
+
+    # NEW: розтягуємо фон і overlay
+    def resizeEvent(self, event):
+        if self.bg_label and self.overlay:
+            size = self.size()
+            self.bg_label.setGeometry(0, 0, size.width(), size.height())
+            self.overlay.setGeometry(0, 0, size.width(), size.height())
+        super().resizeEvent(event)
 
     def show_error(self, field, message):
         input_field = None
