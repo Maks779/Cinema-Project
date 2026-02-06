@@ -260,7 +260,10 @@ class LoginWindow(QWidget):
 
         if self.auth_service.login(username, password):
             user_data = self.auth_service.current_user
-            role = user_data[3]
+            
+            user_id = user_data[0]
+            username = user_data[1]
+            role = user_data[5]
 
             if role == "admin":
                 from views.admin_panel import AdminPanel
@@ -269,9 +272,9 @@ class LoginWindow(QWidget):
             else:
                 from views.main_view import MainView
 
-                self.next_window = MainView(username, role)
+                self.next_window = MainView(user_id=user_id, username=username, role=role)
 
-            self.next_window.show()
+            self.next_window.showMaximized()
             self.close()
         else:
             self.show_error("username", "Invalid username or password")

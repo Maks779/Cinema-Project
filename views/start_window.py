@@ -164,5 +164,5 @@ class StartWindow(QMainWindow):
         from views.main_view import MainView
 
         self.main_view = MainView(username=None, role="guest")
-        self.main_view.show()
+        self.main_view.showMaximized()
         self.close()
