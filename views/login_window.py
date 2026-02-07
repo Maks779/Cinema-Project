@@ -15,12 +15,7 @@ from ui.styles import apply_style
 
 
 def fade_to_window(current: QWidget, next_cls, *args, **kwargs):
-    """
-    Простий fade-перехід між вікнами.
-    Не чіпає логіку вікон, тільки показ/закриття.
-    """
     next_win = next_cls(*args, **kwargs)
-    # Синхронізуємо геометрію, щоб не було стрибка
     next_win.setGeometry(current.geometry())
     next_win.setWindowOpacity(0.0)
     next_win.show()
@@ -57,8 +52,8 @@ class LoginWindow(QWidget):
         self.auth_service = None
 
         self.error_labels = {}
-        self.bg_label = None      # NEW
-        self.overlay = None       # NEW
+        self.bg_label = None
+        self.overlay = None
 
         self.init_ui()
         apply_style(self, "auth")
@@ -70,12 +65,10 @@ class LoginWindow(QWidget):
             self.setWindowIcon(QIcon(icon_path))
 
     def init_ui(self):
-        # --- Головний контейнер ---
         main_layout = QVBoxLayout(self)
         main_layout.setContentsMargins(0, 0, 0, 0)
         main_layout.setSpacing(0)
 
-        # --- ШАР 1: фон ---
         self.bg_label = QLabel(self)
         self.bg_label.setScaledContents(True)
         self.bg_label.lower()
@@ -88,11 +81,9 @@ class LoginWindow(QWidget):
         else:
             self.bg_label.setStyleSheet("background-color: #000000;")
 
-        # --- ШАР 2: затемнюючий overlay ---
         self.overlay = QWidget(self)
         self.overlay.setStyleSheet("background-color: rgba(0, 0, 0, 0.75);")
 
-        # --- ШАР 3: існуючий контент (НЕ змінюємо верстку) ---
         main_layout.addStretch(1)
 
         h_layout = QHBoxLayout()
@@ -188,7 +179,6 @@ class LoginWindow(QWidget):
         main_layout.addLayout(h_layout)
         main_layout.addStretch(1)
 
-    # NEW: розтягуємо фон і overlay
     def resizeEvent(self, event):
         if self.bg_label and self.overlay:
             size = self.size()
@@ -260,7 +250,7 @@ class LoginWindow(QWidget):
 
         if self.auth_service.login(username, password):
             user_data = self.auth_service.current_user
-            
+
             user_id = user_data[0]
             username = user_data[1]
             role = user_data[5]
@@ -272,7 +262,9 @@ class LoginWindow(QWidget):
             else:
                 from views.main_view import MainView
 
-                self.next_window = MainView(user_id=user_id, username=username, role=role)
+                self.next_window = MainView(
+                    user_id=user_id, username=username, role=role
+                )
 
             self.next_window.showMaximized()
             self.close()

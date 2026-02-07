@@ -9,12 +9,11 @@ from PySide6.QtWidgets import (
     QPushButton,
     QScrollArea,
     QGridLayout,
-    QMessageBox,
     QFrame,
     QLineEdit,
 )
-from PySide6.QtCore import Qt, QSize
-from PySide6.QtGui import QPixmap, QCursor, QIcon
+from PySide6.QtCore import Qt
+from PySide6.QtGui import QPixmap, QCursor, QIcon, QFontMetrics
 from db.movie_repo import MovieRepo
 from views.showtime_view import ShowtimeView
 
@@ -37,30 +36,24 @@ class MainView(QMainWindow):
 
         self.setWindowTitle("CineBooking - Browse Movies")
 
-        # ІКОНКА ВІКНА
         icon_path = "assets/cinema_logo.png"
         if os.path.exists(icon_path):
             self.setWindowIcon(QIcon(icon_path))
 
-        # --- Фон і overlay ---
         self.bg_label = None
         self.overlay = None
 
-        # --- Основний контейнер ---
         container = QWidget()
         self.setCentralWidget(container)
 
-        # Створюємо фон
         self.setup_background(container)
 
         self.main_layout = QVBoxLayout(container)
         self.main_layout.setContentsMargins(30, 20, 30, 20)
         self.main_layout.setSpacing(20)
 
-        # --- Navbar ---
         navbar = QHBoxLayout()
 
-        # ЛОГО В NAVBAR
         logo_label = QLabel()
         if os.path.exists(icon_path):
             logo_pix = QPixmap(icon_path)
@@ -71,7 +64,6 @@ class MainView(QMainWindow):
         logo_label.setAlignment(Qt.AlignCenter)
         navbar.addWidget(logo_label)
 
-        # Вітання
         welcome_lbl = QLabel(
             f"Welcome, <span style='color: #ffb400;'>{self.username}</span>"
         )
@@ -89,9 +81,8 @@ class MainView(QMainWindow):
 
         navbar.addStretch()
 
-        # Пошук
         self.search_bar = QLineEdit()
-        self.search_bar.setPlaceholderText("🔍 Search for movies...")
+        self.search_bar.setPlaceholderText("Search for movies...")
         self.search_bar.setFixedWidth(400)
         self.search_bar.setStyleSheet(
             """
@@ -114,7 +105,6 @@ class MainView(QMainWindow):
 
         navbar.addSpacing(20)
 
-        # Кнопка Login/Logout (Золота)
         self.btn_auth = QPushButton("Logout" if self.role != "guest" else "Login")
         self.btn_auth.setCursor(QCursor(Qt.PointingHandCursor))
         self.btn_auth.setStyleSheet(
@@ -141,7 +131,6 @@ class MainView(QMainWindow):
 
         self.main_layout.addLayout(navbar)
 
-        # --- Grid / Scroll Area ---
         scroll = QScrollArea()
         scroll.setWidgetResizable(True)
         scroll.setStyleSheet(
@@ -177,7 +166,6 @@ class MainView(QMainWindow):
         scroll.setWidget(scroll_content)
         self.main_layout.addWidget(scroll)
 
-        # --- Pagination ---
         pagination_layout = QHBoxLayout()
         self.btn_prev = QPushButton("← Previous")
         self.btn_next = QPushButton("Next →")
@@ -283,10 +271,14 @@ class MainView(QMainWindow):
         columns = 5
 
         for i, m in enumerate(movies_to_show):
-            movie_id, title, _, duration, _, poster_url = m
+            movie_id = m[0]
+            title = m[1]
+            genre = m[2]
+            description = m[4]
+            poster_url = m[5]
 
             card = QFrame()
-            card.setFixedSize(200, 360)
+            card.setFixedSize(200, 420)
             card.setStyleSheet(
                 """
                 QFrame {
@@ -303,7 +295,7 @@ class MainView(QMainWindow):
 
             layout = QVBoxLayout(card)
             layout.setContentsMargins(10, 10, 10, 15)
-            layout.setSpacing(10)
+            layout.setSpacing(5)
 
             img_lbl = QLabel()
             img_lbl.setFixedSize(180, 260)
@@ -327,7 +319,7 @@ class MainView(QMainWindow):
             title_lbl.setStyleSheet(
                 """
                 font-weight: bold; 
-                font-size: 13px; 
+                font-size: 14px; 
                 color: white; 
                 background: transparent; 
                 border: none;
@@ -335,7 +327,29 @@ class MainView(QMainWindow):
             )
             title_lbl.setWordWrap(True)
             title_lbl.setAlignment(Qt.AlignCenter)
-            title_lbl.setFixedHeight(35)
+            title_lbl.setFixedHeight(40)
+
+            genre_lbl = QLabel(genre if genre else "Unknown Genre")
+            genre_lbl.setStyleSheet(
+                "color: #aaa; font-size: 11px; background: transparent; border: none;"
+            )
+            genre_lbl.setAlignment(Qt.AlignCenter)
+            genre_lbl.setFixedHeight(15)
+
+            desc_lbl = QLabel()
+            desc_lbl.setStyleSheet(
+                "color: #ccc; font-size: 11px; background: transparent; border: none;"
+            )
+            desc_lbl.setAlignment(Qt.AlignCenter)
+            desc_lbl.setWordWrap(True)
+            desc_lbl.setFixedHeight(35)
+
+            full_description = (
+                description if description else "No description available."
+            )
+            metrics = QFontMetrics(desc_lbl.font())
+            elided_desc = metrics.elidedText(full_description, Qt.ElideRight, 180 * 2)
+            desc_lbl.setText(elided_desc)
 
             btn = QPushButton("Book Now")
             btn.setCursor(QCursor(Qt.PointingHandCursor))
@@ -356,11 +370,15 @@ class MainView(QMainWindow):
             """
             )
             btn.clicked.connect(
-                lambda checked, mid=movie_id, mt=title: self.book_movie(mid, mt)
+                lambda checked, mid=movie_id, mt=title, md=full_description: self.book_movie(
+                    mid, mt, md
+                )
             )
 
             layout.addWidget(img_lbl)
             layout.addWidget(title_lbl)
+            layout.addWidget(genre_lbl)
+            layout.addWidget(desc_lbl)
             layout.addWidget(btn)
 
             self.movie_grid.addWidget(card, i // columns, i % columns)
@@ -377,9 +395,12 @@ class MainView(QMainWindow):
         except:
             return None
 
-    def book_movie(self, mid, mt):
-        self.sw = ShowtimeView(mid, mt, self.user_id, self.username, self.role)
-        self.sw.show()
+    def book_movie(self, mid, mt, md):
+        self.sw = ShowtimeView(
+            mid, mt, self.user_id, self.username, self.role, description=md
+        )
+        self.sw.showMaximized()
+        self.close()
 
     def next_page(self):
         self.current_page_index += 1

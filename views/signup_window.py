@@ -27,9 +27,8 @@ class SignupWindow(QWidget):
         self.user_repo = UserRepo()
 
         self.error_labels = {}
-        self.bg_label = None      # NEW
-        self.overlay = None       # NEW
-
+        self.bg_label = None
+        self.overlay = None
         self.init_ui()
         apply_style(self, "auth")
         self.setWindowState(Qt.WindowMaximized)
@@ -40,12 +39,10 @@ class SignupWindow(QWidget):
             self.setWindowIcon(QIcon(icon_path))
 
     def init_ui(self):
-        # --- Головний контейнер ---
         main_layout = QVBoxLayout(self)
         main_layout.setContentsMargins(0, 0, 0, 0)
         main_layout.setSpacing(0)
 
-        # --- ШАР 1: фон ---
         self.bg_label = QLabel(self)
         self.bg_label.setScaledContents(True)
         self.bg_label.lower()
@@ -58,11 +55,9 @@ class SignupWindow(QWidget):
         else:
             self.bg_label.setStyleSheet("background-color: #000000;")
 
-        # --- ШАР 2: затемнюючий overlay ---
         self.overlay = QWidget(self)
         self.overlay.setStyleSheet("background-color: rgba(0, 0, 0, 0.75);")
 
-        # --- ШАР 3: існуючий контент (НЕ змінюємо верстку) ---
         main_layout.addStretch(1)
 
         h_layout = QHBoxLayout()
@@ -196,7 +191,6 @@ class SignupWindow(QWidget):
         main_layout.addLayout(h_layout)
         main_layout.addStretch(1)
 
-    # NEW: розтягуємо фон і overlay
     def resizeEvent(self, event):
         if self.bg_label and self.overlay:
             size = self.size()

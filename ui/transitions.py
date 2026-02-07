@@ -1,10 +1,10 @@
 from PySide6.QtCore import QPropertyAnimation, QEasingCurve
 from PySide6.QtWidgets import QWidget
 
+
 def fade_to_window(current: QWidget, next_cls, *args, **kwargs):
     next_win = next_cls(*args, **kwargs)
     next_win.setWindowOpacity(0.0)
-    # копіюємо положення/розмір
     next_win.setGeometry(current.geometry())
     next_win.show()
 

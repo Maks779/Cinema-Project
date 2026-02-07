@@ -46,7 +46,6 @@ class StartWindow(QMainWindow):
         central_layout.setContentsMargins(0, 0, 0, 0)
         central_layout.setSpacing(0)
 
-        # Фон
         self.bg_label = QLabel()
         self.bg_label.setObjectName("bgLabel")
         self.bg_label.setScaledContents(True)
@@ -86,7 +85,6 @@ class StartWindow(QMainWindow):
         overlay_layout.addLayout(top_bar)
         overlay_layout.addStretch()
 
-        # Center Card
         self.center_card = QFrame()
         self.center_card.setObjectName("centerCard")
         self.center_card.setFixedWidth(520)

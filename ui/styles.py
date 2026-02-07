@@ -16,7 +16,6 @@ COLORS = {
     "border_hover": "rgba(255, 136, 0, 0.7)",
 }
 
-# Базовий стиль з шрифтом Inter
 BASE_STYLE = f"""
     QWidget {{
         background-color: {COLORS['bg_dark']};
@@ -31,7 +30,6 @@ BASE_STYLE = f"""
     }}
 """
 
-# Start Window
 START_WINDOW_STYLE = (
     BASE_STYLE
     + f"""
@@ -122,7 +120,6 @@ START_WINDOW_STYLE = (
 """
 )
 
-# Auth Windows (Login/Signup)
 AUTH_WINDOW_STYLE = (
     BASE_STYLE
     + f"""
